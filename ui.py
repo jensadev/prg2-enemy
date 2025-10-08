@@ -30,50 +30,55 @@ class GameUI:
 
         # Create enemies with positions and colors
         self.enemies = [
-            Enemy(100, 5, "Slajm", 150, 200, "green", "darkgreen"),
-            Enemy(160, 10, "Goblin", 500, 200, "red", "darkred"),
-            Enemy(200, 15, "Troll", 300, 300, "blue", "darkblue")
+            Enemy("Slajm", 100, 5, 40, 20, 150, 200, "green", "darkgreen"),
+            Enemy("Goblin", 160, 10, 40, 20, 450, 200, "red", "darkred")
         ]
-
+        
+        # Game loop settings
+        self.running = False
+        self.update_interval = 50  # milliseconds between updates
+        
         # Draw enemies on canvas
-        self.draw_enemies()
+        self.draw_all_enemies()
 
         # Create control panels
         self.create_control_panels()
+        
+        # Start the game loop
+        self.start_game_loop()
 
-    def draw_enemies(self):
-        """Draw all enemies as colored squares on the canvas"""
-        # Clear canvas first
+    def draw_all_enemies(self):
+        """Clear canvas and let each enemy draw itself"""
         self.canvas.delete("all")
-
-        # Draw each enemy
         for enemy in self.enemies:
-            if enemy.alive:
-                # Draw rectangle
-                self.canvas.create_rectangle(
-                    enemy.x, enemy.y,
-                    enemy.x + enemy.size, enemy.y + enemy.size,
-                    fill=enemy.color,
-                    outline=enemy.outline,
-                    width=2
-                )
-                # Add label
-                self.canvas.create_text(
-                    enemy.x + enemy.size//2, enemy.y - 15,
-                    text=f"{enemy.name} ({enemy.health} HP)",
-                    fill="black"
-                )
+            enemy.draw(self.canvas)
+    
+    def update_game(self):
+        """Main game update loop - called every frame"""
+        if self.running:
+            # Update all enemies
+            for enemy in self.enemies:
+                enemy.update(self.canvas_width, self.canvas_height)
+            
+            # Redraw everything
+            self.draw_all_enemies()
+            
+            # Schedule next update
+            self.root.after(self.update_interval, self.update_game)
+    
+    def start_game_loop(self):
+        """Start the main game loop"""
+        self.running = True
+        self.update_game()
+    
+    def stop_game_loop(self):
+        """Stop the main game loop"""
+        self.running = False
 
     def move_enemy(self, enemy_index, direction):
-        """Move specified enemy in the given direction"""
+        """Queue movement for specified enemy"""
         enemy = self.enemies[enemy_index]
-        enemy.move_direction(
-            direction,
-            self.move_distance,
-            self.canvas_width,
-            self.canvas_height
-        )
-        self.draw_enemies()
+        enemy.queue_movement(direction)
 
     def create_enemy_controls(self, parent_frame, enemy_name, enemy_index):
         """Create control panel for a single enemy"""
@@ -110,7 +115,10 @@ class GameUI:
 
     def run(self):
         """Start the GUI main loop"""
+        print("Starting Enemy Battle Game with game loop architecture...")
         self.root.mainloop()
+        # Stop game loop when window closes
+        self.stop_game_loop()
 
 
 # Create and run the application

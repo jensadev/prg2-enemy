@@ -10,10 +10,41 @@ class Enemy:
         self.speed = speed
         self.color = color
         self.outline = outline
+        
+        # Movement queue for smooth updates
+        self.movement_queue = []
 
     @property
     def is_dead(self) -> bool:
         return not self.alive
+    
+    def update(self, canvas_width: int, canvas_height: int):
+        """Update enemy state each frame - process movement queue"""
+        if self.movement_queue:
+            direction = self.movement_queue.pop(0)
+            self.move_direction(direction, canvas_width, canvas_height)
+    
+    def queue_movement(self, direction: str):
+        """Queue a movement for the next update cycle"""
+        self.movement_queue.append(direction)
+    
+    def draw(self, canvas):
+        """Draw this enemy on the given canvas"""
+        if self.alive:
+            # Draw rectangle
+            canvas.create_rectangle(
+                self.x, self.y,
+                self.x + self.size, self.y + self.size,
+                fill=self.color,
+                outline=self.outline,
+                width=2
+            )
+            # Add label
+            canvas.create_text(
+                self.x + self.size//2, self.y - 15,
+                text=f"{self.name} ({self.health} HP)",
+                fill="black"
+            )
 
     def move(self, x: int, y: int):
         self.x = x
