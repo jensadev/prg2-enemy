@@ -80,8 +80,7 @@ class Enemy:
             print("-" * 30)
 
 
-
-def __main__():
+if __name__ == "__main__":
     slime = Enemy("Slime", 100, 5, 40, 20)
     goblin = Enemy("Goblin", 160, 10, 40, 20)
     slime.print_status()
